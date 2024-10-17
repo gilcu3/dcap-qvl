@@ -81,4 +81,4 @@ std = [
     "urlencoding",
 ]
 report = ["std", "tracing", "futures"]
-js = ["ring/wasm32_unknown_unknown_js", "serde-wasm-bindgen", "wasm-bindgen", "serde_bytes"]
+js = ["ring/wasm32_unknown_unknown_js", "getrandom", "serde-wasm-bindgen", "wasm-bindgen", "serde_bytes"]
