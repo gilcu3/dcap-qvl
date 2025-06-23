@@ -47,12 +47,6 @@ impl PcsEndpoints {
         self.base_url.starts_with(PCS_URL)
     }
 
-    fn from_quote(base_url: &str, quote: &Quote) -> Result<Self> {
-        let ca = quote.ca().context("Failed to get CA")?;
-        let fmspc = hex::encode_upper(quote.fmspc().context("Failed to get FMSPC")?);
-        Ok(Self::new(base_url, quote.header.is_sgx(), fmspc, ca))
-    }
-
     fn url_pckcrl(&self) -> String {
         self.mk_url("sgx", &format!("pckcrl?ca={}&encoding=der", self.ca))
     }
@@ -133,24 +127,32 @@ fn extract_crl_url(cert_der: &[u8]) -> Result<Option<String>> {
 ///
 /// * `pccs_url` - The base URL of PCCS server. (e.g. `https://pccs.example.com/sgx/certification/v4`)
 /// * `quote` - The raw quote to verify. Supported SGX and TDX quotes.
-/// * `timeout` - The timeout for the request. (e.g. `Duration::from_secs(10)`)
 ///
 /// # Returns
 ///
 /// * `Ok(QuoteCollateralV3)` - The quote collateral
 /// * `Err(Error)` - The error
-pub async fn get_collateral(
-    pccs_url: &str,
-    mut quote: &[u8],
-    #[cfg(not(feature = "js"))] timeout: Duration,
-) -> Result<QuoteCollateralV3> {
+pub async fn get_collateral(pccs_url: &str, mut quote: &[u8]) -> Result<QuoteCollateralV3> {
     let quote = Quote::decode(&mut quote)?;
+    let ca = quote.ca().context("Failed to get CA")?;
+    let fmspc = hex::encode_upper(quote.fmspc().context("Failed to get FMSPC")?);
+    get_collateral_for_fmspc(pccs_url, fmspc, ca, quote.header.is_sgx()).await
+}
+
+pub async fn get_collateral_for_fmspc(
+    pccs_url: &str,
+    fmspc: String,
+    ca: &'static str,
+    for_sgx: bool,
+) -> Result<QuoteCollateralV3> {
     let builder = reqwest::Client::builder();
     #[cfg(not(feature = "js"))]
-    let builder = builder.danger_accept_invalid_certs(true).timeout(timeout);
+    let builder = builder
+        .danger_accept_invalid_certs(true)
+        .timeout(Duration::from_secs(180));
     let client = builder.build()?;
 
-    let endpoints = PcsEndpoints::from_quote(pccs_url, &quote)?;
+    let endpoints = PcsEndpoints::new(pccs_url, for_sgx, fmspc, ca);
 
     let pck_crl_issuer_chain;
     let pck_crl;
@@ -251,23 +253,13 @@ pub async fn get_collateral(
 /// # Arguments
 ///
 /// * `quote` - The raw quote to verify. Supported SGX and TDX quotes.
-/// * `timeout` - The timeout for the request. (e.g. `Duration::from_secs(10)`)
 ///
 /// # Returns
 ///
 /// * `Ok(QuoteCollateralV3)` - The quote collateral
 /// * `Err(Error)` - The error
-pub async fn get_collateral_from_pcs(
-    quote: &[u8],
-    #[cfg(not(feature = "js"))] timeout: Duration,
-) -> Result<QuoteCollateralV3> {
-    get_collateral(
-        PCS_URL,
-        quote,
-        #[cfg(not(feature = "js"))]
-        timeout,
-    )
-    .await
+pub async fn get_collateral_from_pcs(quote: &[u8]) -> Result<QuoteCollateralV3> {
+    get_collateral(PCS_URL, quote).await
 }
 
 /// Get collateral and verify the quote.
@@ -281,13 +273,7 @@ pub async fn get_collateral_and_verify(
     } else {
         pccs_url
     };
-    let collateral = get_collateral(
-        pccs_url,
-        quote,
-        #[cfg(not(feature = "js"))]
-        Duration::from_secs(120),
-    )
-    .await?;
+    let collateral = get_collateral(pccs_url, quote).await?;
     let now = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .context("Failed to get current time")?
