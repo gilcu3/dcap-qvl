@@ -83,4 +83,4 @@ std = [
 ]
 report = ["std", "tracing", "futures"]
 js = ["ring/wasm32_unknown_unknown_js", "getrandom", "serde-wasm-bindgen", "wasm-bindgen"]
-wasm = ["ring/wasm32_unknown_unknown_js", "getrandom"]
+wasm = ["ring/wasm32_unknown_unknown_js", "serde-wasm-bindgen", "wasm-bindgen"]
