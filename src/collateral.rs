@@ -6,7 +6,7 @@ use crate::quote::{Header, Quote};
 use crate::verify::VerifiedReport;
 use crate::QuoteCollateralV3;
 
-#[cfg(not(feature = "js"))]
+#[cfg(all(not(feature = "wasm"), not(feature = "js")))]
 use core::time::Duration;
 use std::borrow::Cow;
 use std::time::SystemTime;
@@ -36,12 +36,12 @@ fn get_header(resposne: &reqwest::Response, name: &str) -> Result<String> {
 pub async fn get_collateral(
     pccs_url: &str,
     mut quote: &[u8],
-    #[cfg(not(feature = "js"))] timeout: Duration,
+    #[cfg(all(not(feature = "wasm"), not(feature = "js")))] timeout: Duration,
 ) -> Result<QuoteCollateralV3> {
     let quote = Quote::decode(&mut quote)?;
     let fmspc = hex::encode_upper(quote.fmspc().context("Failed to get FMSPC")?);
     let builder = reqwest::Client::builder();
-    #[cfg(not(feature = "js"))]
+    #[cfg(all(not(feature = "wasm"), not(feature = "js")))]
     let builder = builder.danger_accept_invalid_certs(true).timeout(timeout);
     let client = builder.build()?;
     let base_url = pccs_url.trim_end_matches('/');
@@ -115,13 +115,13 @@ pub async fn get_collateral(
 /// * `Err(Error)` - The error
 pub async fn get_collateral_from_pcs(
     quote: &[u8],
-    #[cfg(not(feature = "js"))] timeout: Duration,
+    #[cfg(all(not(feature = "wasm"), not(feature = "js")))] timeout: Duration,
 ) -> Result<QuoteCollateralV3> {
     let header = Header::decode(&mut &quote[..]).context("Failed to decode quote header")?;
     get_collateral(
         pcs_url(header.is_sgx()),
         quote,
-        #[cfg(not(feature = "js"))]
+        #[cfg(all(not(feature = "wasm"), not(feature = "js")))]
         timeout,
     )
     .await
@@ -142,7 +142,7 @@ pub async fn get_collateral_and_verify(
     let collateral = get_collateral(
         &pccs_url,
         quote,
-        #[cfg(not(feature = "js"))]
+        #[cfg(all(not(feature = "wasm"), not(feature = "js")))]
         Duration::from_secs(120),
     )
     .await?;
