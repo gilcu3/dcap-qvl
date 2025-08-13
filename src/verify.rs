@@ -1,4 +1,5 @@
 use anyhow::{anyhow, bail, Context, Result};
+use borsh::{BorshDeserialize, BorshSerialize};
 use scale::Decode;
 
 use {
@@ -20,7 +21,7 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "js")]
 use wasm_bindgen::prelude::*;
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct VerifiedReport {
     pub status: String,
     pub advisory_ids: Vec<String>,

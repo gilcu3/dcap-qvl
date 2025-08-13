@@ -1,8 +1,9 @@
 use alloc::string::String;
 use alloc::vec::Vec;
+use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TcbInfo {
     pub id: String,
@@ -16,7 +17,7 @@ pub struct TcbInfo {
     pub tcb_levels: Vec<TcbLevel>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TcbLevel {
     pub tcb: Tcb,
@@ -26,7 +27,7 @@ pub struct TcbLevel {
     pub advisory_ids: Vec<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Tcb {
     #[serde(rename = "sgxtcbcomponents")]
@@ -37,7 +38,9 @@ pub struct Tcb {
     pub pce_svn: u16,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(
+    Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize, PartialEq, Eq, PartialOrd, Ord,
+)]
 #[serde(rename_all = "camelCase")]
 pub struct TcbComponents {
     pub svn: u8,
