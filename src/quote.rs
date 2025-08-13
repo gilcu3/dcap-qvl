@@ -214,7 +214,7 @@ impl Decode for AuthDataV4 {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub enum AuthData {
     V3(AuthDataV3),
     V4(AuthDataV4),
@@ -278,7 +278,7 @@ impl Report {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct Quote {
     pub header: Header,
     pub report: Report,
