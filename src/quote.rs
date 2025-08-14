@@ -42,7 +42,7 @@ impl<T: Decode + Into<u64>> Decode for Data<T> {
     }
 }
 
-#[derive(Decode, Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Decode, Debug, Clone, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct Header {
     pub version: u16,
     pub attestation_key_type: u16,
@@ -135,7 +135,7 @@ pub struct TDReport15 {
     pub mr_service_td: [u8; 48],
 }
 
-#[derive(Decode, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Decode, Clone, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct CertificationData {
     pub cert_type: u16,
     pub body: Data<u32>,
@@ -151,7 +151,7 @@ impl core::fmt::Debug for CertificationData {
     }
 }
 
-#[derive(Decode, Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Decode, Debug, Clone, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct QEReportCertificationData {
     #[serde(with = "serde_bytes")]
     pub qe_report: [u8; ENCLAVE_REPORT_BYTE_LEN],
@@ -161,7 +161,7 @@ pub struct QEReportCertificationData {
     pub certification_data: CertificationData,
 }
 
-#[derive(Decode, Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Decode, Debug, Clone, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct AuthDataV3 {
     #[serde(with = "serde_bytes")]
     pub ecdsa_signature: [u8; ECDSA_SIGNATURE_BYTE_LEN],
@@ -175,7 +175,7 @@ pub struct AuthDataV3 {
     pub certification_data: CertificationData,
 }
 
-#[derive(Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct AuthDataV4 {
     #[serde(with = "serde_bytes")]
     pub ecdsa_signature: [u8; ECDSA_SIGNATURE_BYTE_LEN],
@@ -214,7 +214,7 @@ impl Decode for AuthDataV4 {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub enum AuthData {
     V3(AuthDataV3),
     V4(AuthDataV4),
@@ -278,7 +278,7 @@ impl Report {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct Quote {
     pub header: Header,
     pub report: Report,
